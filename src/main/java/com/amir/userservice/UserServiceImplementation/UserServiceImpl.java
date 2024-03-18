@@ -6,6 +6,7 @@ import com.amir.userservice.Entity.User;
 import com.amir.userservice.Exception.ResourceNotFoundException;
 import com.amir.userservice.Repositories.UserRepo;
 import com.amir.userservice.Services.UserService;
+import com.amir.userservice.external.service.HotelService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,9 @@ public class UserServiceImpl implements UserService {
     private RestTemplate restTemplate;
 
     private final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
+
+    @Autowired
+    private HotelService hotelService;
 
     @Autowired
     public UserServiceImpl(UserRepo userRepo) {
@@ -55,8 +59,9 @@ public class UserServiceImpl implements UserService {
         Rating[] ratingOfUser = restTemplate.getForObject("http://localhost:8083/ratings/users/" + user.getUserId(), Rating[].class);
         List<Rating> ratings = Arrays.stream(ratingOfUser).toList();
         List<Rating> ratingList = ratings.stream().map(rating -> {
-            ResponseEntity<Hotel> forEntity = restTemplate.getForEntity("http://localhost:8082/hotels/" + rating.getHotelId(), Hotel.class);
-            Hotel hotel = forEntity.getBody();
+//            ResponseEntity<Hotel> forEntity = restTemplate.getForEntity("http://localhost:8082/hotels/" + rating.getHotelId(), Hotel.class);
+
+            Hotel hotel = hotelService.getHotel(rating.getHotelId());
             rating.setHotel(hotel);
             return rating;
         }).collect(Collectors.toList());
